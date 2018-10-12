@@ -2,7 +2,7 @@
 Datalytyx Data Science Tools
 ============================
 
-**This is the unofficial Datalytyx Data Science Team code repository**
+**This is the Datalytyx Data Science Team code repository**
 
 
 dlxtools Module
