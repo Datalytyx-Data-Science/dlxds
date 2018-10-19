@@ -4,9 +4,22 @@ Module for preprocessing tools.
 Class List (in order):
 DataFrameSelector
 """
+
+#===========================================================================================
+#Imports
+#===========================================================================================
+
+import numpy as np 
+import pandas as pd
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.feature_selection import SelectKBest, SelectFromModel
+from sklearn.decomposition import TruncatedSVD
+
+
 #===========================================================================================
 #Column Selectors
 #===========================================================================================
+
 
 
 class DataFrameSelector(BaseEstimator, TransformerMixin):
@@ -96,7 +109,66 @@ class DataFrameSelector(BaseEstimator, TransformerMixin):
         X_typed = X.select_dtypes(attribute_name)
         
         return X_typed
+
+
+
+#Select from an SKLearn built in model
+class FromModelFeatureSelector(BaseEstimator, TransformerMixin):
+    """
+    Authors
+    -------
+    Chris Schon
+    """
+
+    def __init__(self, model, threshold):
+        self.model = model
+        self.threshold = threshold
+    def fit(self, X, y):
+        self.fromModel = SelectFromModel(estimator=self.model, threshold = self.threshold)
+        self.fromModel.fit(X, y)
+        return self
+    def transform(self, X):
+        return self.fromModel.transform(X)
+
+
+#Use SKLearn SelectKBest for feature selection
+class KBestFeatureSelector(BaseEstimator, TransformerMixin):
+    """
+    Authors
+    -------
+    Chris Schon
+    """
+    def __init__(self, k, scorefunc):
+        self.k = k
+        self.scorefunc = scorefunc
+    def fit(self, X, y):
+        self.kbest = SelectKBest(score_func = self.scorefunc, k = self.k)
+        self.kbest.fit(X, y)
+        return self
+    def transform(self, X):
+        return self.kbest.transform(X)
    
+
+
+
+#Select top k Principal Components for feature
+class PCAFeatureSelector(BaseEstimator, TransformerMixin):
+    """
+    Authors
+    -------
+    Chris Schon
+    """
+    def __init__(self, k):
+        self.k = k
+    def fit(self, X, y=None):
+        self.pca = TruncatedSVD(n_components = self.k)
+        self.pca.fit(X)
+        return self
+    def transform(self, X):
+        return self.pca.transform(X)
+
+
+
 
 #===========================================================================================
 #Data Cleaners

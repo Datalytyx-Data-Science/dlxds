@@ -4,4 +4,5 @@
 __all__ = ['feature_selection',
           'model_selection',
           'pipelines',
-          'preprocessing']          ]
+          'preprocessing',
+          'random']

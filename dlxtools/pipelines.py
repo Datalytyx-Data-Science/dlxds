@@ -3,9 +3,17 @@ This is a pipelines module
 
 Use for creating and saving commonly used pipelines.
 """
+#===========================================================================================
+#Imports
+#===========================================================================================
 
+import numpy as np 
+import pandas as pd
+from sklearn.base import BaseEstimator, TransformerMixin
+
+#===========================================================================================
 #Pipeline construction tools
-#===========================
+#===========================================================================================
 
 class DataFrameFeatureUnion(BaseEstimator, TransformerMixin):
     """ A DataFrame transformer that unites several DataFrame transformers
@@ -22,9 +30,12 @@ class DataFrameFeatureUnion(BaseEstimator, TransformerMixin):
     -------
     Guy who wrote this one: https://www.kaggle.com/jankoch/scikit-learn-pipelines-and-pandas
     """ 
+    
     def __init__(self, list_of_transformers):
+
         self.list_of_transformers = list_of_transformers
         
+
     def transform(self, X, **transformparamn):
         """ Applies the fitted transformers on a DataFrame
         
@@ -61,8 +72,10 @@ class DataFrameFeatureUnion(BaseEstimator, TransformerMixin):
         for transformer in self.list_of_transformers:
             fitted_trans = clone(transformer).fit(X, y=None, **fitparams)
             self.fitted_transformers_.append(fitted_trans)
+        
         return self
     
-    
+
+#===========================================================================================    
 #Custom Prebuilt Transformers
-#============================
+#===========================================================================================
