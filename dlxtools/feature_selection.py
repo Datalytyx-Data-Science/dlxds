@@ -1,5 +1,5 @@
 """
-This is the module for feautre selction tools
+This is the module for feature selction tools
 """
 
 #===========================================================================================
