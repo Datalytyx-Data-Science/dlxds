@@ -259,6 +259,79 @@ class SparseFeatureDropper(TransformerMixin, BaseEstimator):
         X_full = X.drop(columns = self.drop_columns)
 
         return X_full
+    
+    
+    
+    
+  class NoneReplacer(TransformerMixin, BaseEstimator):
+    
+    """
+    Description:
+    ------------
+    Transformer changes Nonetype values into numpy NaN values.
+    
+    
+    Authors:
+    --------
+    William Holtam
+
+    TODO:
+    -----
+
+    """
+    
+    def __init__(self):
+        """
+        Description
+        -----------
+        Initialise the transformer object.
+        """
+        pass
+
+    def fit(self, X, y = None):
+        """
+        Description
+        -----------
+        No fitting required for this transformer.
+        Simply checks that input is a pandas dataframe or a numpy array.
+        
+        Args
+        ----
+        X: DataFrame, (examples, features)
+            Pandas DataFrame containing training example features
+            
+        y: array/DataFrame, (examples,)
+            (Optional) Training example labels
+            
+        Returns
+        -------
+        self: sklearn.transfromer object
+            Returns the fitted transformer object.
+        """
+        return self
+        
+    def transform(self, X):
+        """
+        Description
+        -----------
+        Transform confirms X is a Dataframe and fills Nonetype with pd.np.nan.
+
+        Args
+        ----
+        X: DataFrame, (examples, features)
+            Pandas DataFrame containing training/test example features.
+
+        Returns
+        -------
+        X_full: DataFrame, (examples, features)
+            Pandas DataFrame containing example features with np.nan values instead of NoneType objects.            
+        """
+        
+        assert isinstance(X, pd.DataFrame)
+        
+        X.fillna(value = pd.np.nan, inplace=True)
+        
+        return pd.DataFrame(X, index = X.index, columns = X.columns)
 
     
 #===========================================================================================    
