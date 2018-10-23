@@ -332,6 +332,80 @@ class SparseFeatureDropper(TransformerMixin, BaseEstimator):
         X.fillna(value = pd.np.nan, inplace=True)
         
         return pd.DataFrame(X, index = X.index, columns = X.columns)
+    
+    
+    
+    
+    class AnyNaNRowRemover(TransformerMixin, BaseEstimator):
+     """
+    Description:
+    ------------
+    Transformer drops any rows where where any element in row is NaN.
+    
+    
+    Authors:
+    --------
+    William Holtam
+
+    TODO:
+    -----
+
+    """
+    
+    def __init__(self):
+        """
+        Description
+        -----------
+        Initialise the transformer object.
+        """
+        pass
+        
+    def fit(self, X, y = None):  # has to take an optional y for pipelines
+        """
+        Description
+        -----------
+        No fitting required for this transformer.
+        Simply checks that input is a pandas dataframe or a numpy array.
+        
+        Args
+        ----
+        X: DataFrame, (examples, features)
+            Pandas DataFrame containing training example features
+            
+        y: array/DataFrame, (examples,)
+            (Optional) Training example labels
+            
+        Returns
+        -------
+        self: sklearn.transfromer object
+            Returns the fitted transformer object.
+        """
+        return self
+    
+    def transform(self, X):
+        """
+        Description
+        -----------
+        Transform drops any rows where where any element in row is NaN.
+
+        Args
+        ----
+        X: DataFrame, (examples, features)
+            Pandas DataFrame containing training/test example features.
+
+        Returns
+        -------
+        X_full: DataFrame, (examples, features)
+            Pandas DataFrame containing example features with np.nan values instead of NoneType objects.            
+        """
+        
+        assert isinstance(X, pd.DataFrame)
+        
+        X = X.dropna(axis=0, how='any')
+        
+        self.cleaned_data = X
+        
+        return pd.DataFrame(X, index = X.index, columns = X.columns)
 
     
 #===========================================================================================    
