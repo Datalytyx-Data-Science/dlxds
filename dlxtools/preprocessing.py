@@ -1,17 +1,17 @@
 """
 Module for preprocessing tools.
-
-Class List (in order):
-DataFrameSelector
-FromModelFeatureSelector
-KBestFeatureSelector
-PCAFeatureSelector
-RemoveCorrelatedFeatures
-SparseFeatureDropper
-NoneReplacer
-AnyNaNRowRemover
-DuplicateColumnRemover
 """
+__all__ = [
+'DataFrameSelector'
+'FromModelFeatureSelector'
+'KBestFeatureSelector'
+'PCAFeatureSelector'
+'RemoveCorrelatedFeatures'
+'SparseFeatureDropper'
+'NoneReplacer'
+'AnyNaNRowRemover'
+'DuplicateColumnRemover'
+]
 
 #===========================================================================================
 #Imports
@@ -28,7 +28,62 @@ from sklearn.decomposition import TruncatedSVD
 #Column Selectors
 #===========================================================================================
 
+class ConstantFeatureDropper(TransformerMixin, BaseEstimator):
+    """
+    Transformer drops features from DataFrame that 
+    """
+    
+    def __init__(self):
+        pass
+    
+    def fit(self, X, y = None):
+        
+        #Isolate numerical columns (in secom this is all)
+        numerical_columns = X.select_dtypes([np.number]).columns
+        
+        #calculatet the standard deviation of numerical columns
+        standard_deviation = X[numerical_columns].std()
+        
+        #Indicate which columns have no standard deviation
+        self.columns_to_drop = standard_deviation[standard_deviation == 0].index           
+        
+        return self
+    
+    def transform(self, X):
+        return X.drop(self.columns_to_drop, axis = 'columns')
 
+class RobustScalerNumerical(RobustScaler):
+    """Implements RobustScaler on numerical columns only."""
+    
+    def fit(self, X, y = None):
+        
+        """Isolates numerical columns and fits using sklearn.preprocessing.RobustScaler().fit()
+        """
+        
+        #Isolate numerical columns (in secom this is all)
+        self.numerical_columns = X.select_dtypes([np.number]).columns
+        
+        #Call parent fit method on just numerical columns
+        super(RobustScalerNumerical, self).fit(X[self.numerical_columns], y)
+        
+        return self
+    
+    def transform(self, X):
+        """Applies sklearn.preprocessing.RobustScaler().transform() to numerical columns.
+        Concatenates scaled numerical and non numerical columns together.
+        """
+        
+        #Scale numerical columns
+        X_num = X[self.numerical_columns]
+        X_scaled = super(RobustScalerNumerical, self).transform(X_num)
+        
+        #Move to a dataframe for concatenation, Important to have the same row indicies and column headers. 
+        X_scaled_df = pd.DataFrame(X_scaled, columns = self.numerical_columns, index = X.index)
+        
+        #Gather non numerical columns
+        X_not_scaled = X[[column for column in X.columns if column not in self.numerical_columns]]
+        
+        return pd.concat([X_scaled_df, X_not_scaled], axis = 'columns')[X.columns] #Concatenate columns in original order
 
 class DataFrameSelector(BaseEstimator, TransformerMixin):
     """
@@ -118,6 +173,35 @@ class DataFrameSelector(BaseEstimator, TransformerMixin):
         
         return X_typed
 
+class SparseFeatureDropper(TransformerMixin, BaseEstimator):
+    """
+    Transformer drops features with a certain percentage of empty rows. The user can set the threshold for this.
+    """
+    
+    def __init__(self, set_threshold = 90):
+        self.set_threshold = set_threshold
+        
+        
+    def fit(self, X, y = None): #has to take an optional y for pipelines
+        
+        """Calculates the number of missing values the corresponds to the threshold.
+        Detects and labels columns with more missing values that the threshold. 
+        """
+        #Threshold defined by # full bins in df.dropna(), we've defined  threshold as percentage empty bins.
+        absolute_threshold = (100 - self.set_threshold)*X.shape[0]/100 
+        
+        self.drop_columns = features.isna().sum()[features.isna().sum() > absolute_threshold].index #Calculates pd.series with column lables as indecies
+        
+        return self
+    
+    def transform(self, X):
+        
+        """Drops columns with more missing values than the threshold.
+        """   
+        
+        assert isinstance(X, pd.DataFrame)
+        
+        return X.drop(columns = self.drop_columns) 
 
 
 #Select from an SKLearn built in model
