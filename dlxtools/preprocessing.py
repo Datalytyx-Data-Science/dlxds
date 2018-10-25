@@ -6,7 +6,7 @@ DataFrameSelector
 FromModelFeatureSelector
 KBestFeatureSelector
 PCAFeatureSelector
-RemoveCorrelatedFeatures
+CorrelatedFeatureRemover
 SparseFeatureDropper
 NoneReplacer
 AnyNaNRowRemover
@@ -178,7 +178,7 @@ class PCAFeatureSelector(BaseEstimator, TransformerMixin):
     
     
     
-class RemoveCorrelatedFeatures(BaseEstimator, TransformerMixin):
+class CorrelatedFeatureRemover(BaseEstimator, TransformerMixin):
 
     """
     A class that drops features if the absolute pairwise correlation between features
