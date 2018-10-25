@@ -23,6 +23,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.feature_selection import SelectKBest, SelectFromModel
 from sklearn.decomposition import TruncatedSVD
+from sklearn.preprocessing import RobustScaler, 
 
 
 #===========================================================================================
@@ -631,3 +632,35 @@ class DuplicateColumnRemover(BaseEstimator, TransformerMixin):
 #Scalers
 #===========================================================================================
 
+class RobustScalerNumerical(RobustScaler):
+    """Implements RobustScaler on numerical columns only."""
+    
+    def fit(self, X, y = None):
+        
+        """Isolates numerical columns and fits using sklearn.preprocessing.RobustScaler().fit()
+        """
+        
+        #Isolate numerical columns (in secom this is all)
+        self.numerical_columns = X.select_dtypes([np.number]).columns
+        
+        #Call parent fit method on just numerical columns
+        super(RobustScalerNumerical, self).fit(X[self.numerical_columns], y)
+        
+        return self
+    
+    def transform(self, X):
+        """Applies sklearn.preprocessing.RobustScaler().transform() to numerical columns.
+        Concatenates scaled numerical and non numerical columns together.
+        """
+        
+        #Scale numerical columns
+        X_num = X[self.numerical_columns]
+        X_scaled = super(RobustScalerNumerical, self).transform(X_num)
+        
+        #Move to a dataframe for concatenation, Important to have the same row indicies and column headers. 
+        X_scaled_df = pd.DataFrame(X_scaled, columns = self.numerical_columns, index = X.index)
+        
+        #Gather non numerical columns
+        X_not_scaled = X[[column for column in X.columns if column not in self.numerical_columns]]
+        
+        return pd.concat([X_scaled_df, X_not_scaled], axis = 'columns')[X.columns] #Concatenate columns in original order
