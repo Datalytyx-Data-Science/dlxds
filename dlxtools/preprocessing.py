@@ -506,6 +506,40 @@ class AnyNaNRowRemover(TransformerMixin, BaseEstimator):
         return pd.DataFrame(X, index = X.index, columns = X.columns)
 
     
+    
+    
+class DuplicateColumnRemover(BaseEstimator, TransformerMixin):
+    
+    """
+    """
+    
+    def fit(self, X, y = None):
+        groups = X.columns.to_series().groupby(X.dtypes).groups
+        dups = []
+    
+        for int64, float64 in groups.items():
+    
+            columns = X[float64].columns
+            vs = X[float64]
+            columns_length = len(columns)
+            
+    
+            for i in range(columns_length):
+                ia = vs.iloc[:,i].values
+                for j in range(i+1, columns_length):
+                    ja = vs.iloc[:,j].values
+                    if array_equal(ia, ja):
+                        dups.append(columns[i])
+                        break
+                        
+        self.dups = dups
+        return self
+        
+    def transform(self, X):
+        X = X.drop(self.dups, axis=1)
+        return X
+
+    
 #===========================================================================================    
 #Scalers
 #===========================================================================================
