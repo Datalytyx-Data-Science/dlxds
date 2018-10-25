@@ -3,14 +3,14 @@ Module for preprocessing tools.
 """
 
 __all__ = [
-'DataFrameSelector'
-'FromModelFeatureSelector'
-'KBestFeatureSelector'
-'PCAFeatureSelector'
-'RemoveCorrelatedFeatures'
-'SparseFeatureDropper'
-'NoneReplacer'
-'AnyNaNRowRemover'
+'DataFrameSelector',
+'FromModelFeatureSelector',
+'KBestFeatureSelector',
+'PCAFeatureSelector',
+'RemoveCorrelatedFeatures',
+'SparseFeatureDropper',
+'NoneReplacer',
+'AnyNaNRowRemover',
 'DuplicateColumnRemover'
 ]
 
@@ -360,6 +360,7 @@ class CorrelatedFeatureRemover(BaseEstimator, TransformerMixin):
 #===========================================================================================
 
 class SparseFeatureDropper(TransformerMixin, BaseEstimator):
+
     """
     Description:
     ------------
