@@ -3,6 +3,13 @@ Module for preprocessing tools.
 
 Class List (in order):
 DataFrameSelector
+FromModelFeatureSelector
+KBestFeatureSelector
+PCAFeatureSelector
+RemoveCorrelatedFeatures
+SparseFeatureDropper
+NoneReplacer
+AnyNaNRowRemover
 """
 
 #===========================================================================================
@@ -167,7 +174,99 @@ class PCAFeatureSelector(BaseEstimator, TransformerMixin):
     def transform(self, X):
         return self.pca.transform(X)
 
+    
+    
+    
+class RemoveCorrelatedFeatures(BaseEstimator, TransformerMixin):
 
+    """
+    A class that drops features if the absolute pairwise correlation between features
+    is greater than the specified corr_threshold, therefore both strong negative and
+    positive correlations are accounted for. If no corr_threshold is specified then
+    the corr_threshold is 0.9.
+    
+    Parameters
+    ----------
+    method : {'pearson', 'kendall', 'spearman'}
+            * pearson : standard correlation coefficient
+            * kendall : Kendall Tau correlation coefficient
+            * spearman : Spearman rank correlation
+    
+    corr_threshold: The threshold above which correlated features should be dropped.
+                    Must be between -1 and 1
+    
+    print_drop_feat:    If "True" then the correlated feature set and the corr val
+                        of the dropped features is printed to the screen.
+        
+    Authors
+    -------
+    William Holtam
+    """
+    
+    def __init__(self, method = 'pearson', corr_threshold = 0.9, print_drop_feat = False):
+        
+        """
+        Description
+        -----------
+        Initialise the transformer object and sets the method, 
+        corr_threshold and print_drop_featas instance variables.
+        """
+        
+        self.method = method
+        self.corr_threshold = corr_threshold
+        self.print_drop_feat = print_drop_feat
+    
+    def fit(self, X, y = None):
+        
+        """
+        Fit creates a correlation matrix and itterates through it to identify
+        columns which are correlated to a greater extent than the corr_threshold.
+        
+        The column numbers of these columns are appended to the "drop_cols" list.
+        The "drop_cols" list is sorted and assigned to the instance variable self.drops.
+        """
+        
+        # Creates Correlation Matrix    
+        corr_matrix = X.corr()
+        iters = range(len(corr_matrix.columns) - 1)
+        drop_cols = []
+        count = 0
+    
+        # Iterates through Correlation Matrix Table to find correlated columns
+        for i in iters:
+            for j in range(i):
+                item = corr_matrix.iloc[j:(j+1), (i+1):(i+2)]
+                col = item.columns
+                row = item.index
+                val = item.values
+                
+                if abs(val) >= self.corr_threshold:
+                    
+                    # Prints the correlated feature set and the corr val
+                    if self.print_drop_feat == True:
+                        print(col.values[0], "|", row.values[0], "|", round(val[0][0], 2))
+                    
+                    drop_cols.append(i)
+                    count += 1
+                    
+        print(str(count)+" features have been droped.")            
+        self.drops = sorted(set(drop_cols))[::-1]
+        
+        return self
+            
+    def transform(self, X):
+        
+        """
+        Transform indexes the inputed dataframe X for the dropped columns and
+        drops them from the dataframe.
+        """
+        
+        # Drops the correlated columns
+        for i in self.drops:
+            col = X.iloc[:, (i+1):(i+2)].columns.values
+            X = X.drop(col, axis=1)
+            
+        return X
 
 
 #===========================================================================================
@@ -262,8 +361,7 @@ class SparseFeatureDropper(TransformerMixin, BaseEstimator):
     
     
     
-    
-  class NoneReplacer(TransformerMixin, BaseEstimator):
+class NoneReplacer(TransformerMixin, BaseEstimator):
     
     """
     Description:
@@ -336,8 +434,8 @@ class SparseFeatureDropper(TransformerMixin, BaseEstimator):
     
     
     
-    class AnyNaNRowRemover(TransformerMixin, BaseEstimator):
-     """
+class AnyNaNRowRemover(TransformerMixin, BaseEstimator):
+    """
     Description:
     ------------
     Transformer drops any rows where where any element in row is NaN.
