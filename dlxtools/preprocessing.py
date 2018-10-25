@@ -10,6 +10,7 @@ RemoveCorrelatedFeatures
 SparseFeatureDropper
 NoneReplacer
 AnyNaNRowRemover
+DuplicateColumnRemover
 """
 
 #===========================================================================================
