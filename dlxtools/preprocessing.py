@@ -1,5 +1,19 @@
 """
 Module for preprocessing tools.
+<<<<<<< HEAD
+=======
+
+Class List (in order):
+DataFrameSelector
+FromModelFeatureSelector
+KBestFeatureSelector
+PCAFeatureSelector
+CorrelatedFeatureRemover
+SparseFeatureDropper
+NoneReplacer
+AnyNaNRowRemover
+DuplicateColumnRemover
+>>>>>>> 2dfa61272f0c8f74dc29c2ed76581143ae78184a
 """
 __all__ = [
 'DataFrameSelector'
@@ -262,7 +276,7 @@ class PCAFeatureSelector(BaseEstimator, TransformerMixin):
     
     
     
-class RemoveCorrelatedFeatures(BaseEstimator, TransformerMixin):
+class CorrelatedFeatureRemover(BaseEstimator, TransformerMixin):
 
     """
     A class that drops features if the absolute pairwise correlation between features
