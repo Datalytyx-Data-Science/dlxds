@@ -297,7 +297,7 @@ class NoneReplacer(TransformerMixin, BaseEstimator):
         """
         Description
         -----------
-        Transform confirms X is a Dataframe and fills Nonetype with pd.np.nan.
+        Transform confirms X is a DataFrame and fills Nonetype with pd.np.nan.
 
         Args
         ----
@@ -475,7 +475,7 @@ class PandasRobustScaler(RobustScaler):
 		-----------
 		Simple wrapper around RobustScaler Fit to check the fit is on Pandas DataFrame
 		"""
-		assert isinstance(X, pd.Dataframe), '{}: input into fit method must be a pandas DataFrame'.format(self.__class__)
+		assert isinstance(X, pd.DataFrame), '{}: input into fit method must be a pandas DataFrame'.format(self.__class__)
 
 		super().fit(X, y)
 
@@ -487,7 +487,7 @@ class PandasRobustScaler(RobustScaler):
 		-----------
 		Simple wrapper around the RobustScaler Transform method.
 		"""
-		assert isinstance(X, pd.Dataframe), '{}: input into transform method must be a pandas DataFrame'.format(self.__class__)
+		assert isinstance(X, pd.DataFrame), '{}: input into transform method must be a pandas DataFrame'.format(self.__class__)
 
 		return pd.DataFrame(super().transform(X), index = X.index, columns = X.columns)
 
