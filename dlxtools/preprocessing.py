@@ -664,3 +664,65 @@ class RobustScalerNumerical(RobustScaler):
         X_not_scaled = X[[column for column in X.columns if column not in self.numerical_columns]]
         
         return pd.concat([X_scaled_df, X_not_scaled], axis = 'columns')[X.columns] #Concatenate columns in original order
+    
+    
+    #------------------------------------------------------------------------------------------------------------------------------
+    #------------------------------------------------------------------------------------------------------------------------------
+    
+    # A Transformer which takes a dataframe and retains those columns which are calucated to be most correlated with target variable.
+    
+      " Authors " 
+        
+      # Thomas Rowe 
+    
+    class CorrelationSelector(TransformerMixin, BaseEstimator):
+    
+    
+    def __init__(self, n_columns = 50):
+        
+        self.n_columns = n_columns
+   
+
+    def fit(self, X, y = None):
+        
+        if not isinstance(X, pd.DataFrame):
+            raise TypeError('X must be a pandas DataFrame')
+        
+        #Find correlations
+        correlations_target = []
+
+        for i in X.columns:
+            
+            corr, p_test = sp.stats.spearmanr(X[i], y)
+            correlations_target.append(corr)
+            
+        corr_train_target = pd.Series(correlations_target, index = X.columns).abs()
+        
+        #Check for nans
+        if corr_train_target.isna().sum() != 0: 
+            raise ValueError('Feature corelations contain nans from {}'.format(self.__class__))
+            
+        self.largest = corr_train_target.nlargest(self.n_columns)
+        
+        #Print a metric
+        self.correlation_total = corr_train_target.sum()
+        self.correlation_score = self.largest.sum()
+        
+        self.correlation_percentage = self.correlation_score/self.correlation_total*100
+        
+        print('The {} features with largest correlation to the labels contain {:.2f}% of the total correlation score.'
+              .format(self.n_columns, self.correlation_percentage))
+        
+        
+        self.most_correlated_cols = self.largest.index
+            
+        return self
+                 
+    
+    def transform(self, X):
+        
+        
+        return X.loc[:, self.most_correlated_cols] 
+    
+    
+    
