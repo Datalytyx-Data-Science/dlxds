@@ -18,12 +18,12 @@ __all__ = [					#List in order
 #Imports
 #===========================================================================================
 
-import numpy as np 
+import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.feature_selection import SelectKBest, SelectFromModel
 from sklearn.decomposition import TruncatedSVD
-from sklearn.preprocessing import RobustScaler 
+from sklearn.preprocessing import RobustScaler
 
 
 #===========================================================================================
@@ -44,34 +44,34 @@ class SparseFeatureRemover(TransformerMixin, BaseEstimator):
     ----
     Error. Returns no columns when threshold is set to 100.
     """
-    
+
     def __init__(self, set_threshold = 100):
         self.set_threshold = set_threshold
-        
-        
+
+
     def fit(self, X, y = None): #has to take an optional y for pipelines
-        
+
         """Calculates the number of missing values the corresponds to the threshold.
-        Detects and labels columns with more missing values that the threshold. 
+        Detects and labels columns with more missing values that the threshold.
         """
         #Threshold defined by # full bins in df.dropna(), we've defined  threshold as percentage empty bins.
-        absolute_threshold = (100 - self.set_threshold)*X.shape[0]/100 
-        
-        self.drop_columns = features.isna().sum()[features.isna().sum() > absolute_threshold].index #Calculates pd.series with column lables as indecies
-        
-        return self
-    
-    def transform(self, X):
-        
-        """Drops columns with more missing values than the threshold.
-        """   
-        
-        assert isinstance(X, pd.DataFrame)
-        
-        return X.drop(columns = self.drop_columns) 
+        absolute_threshold = (100 - self.set_threshold)*X.shape[0]/100
 
-   
-    
+        self.drop_columns = features.isna().sum()[features.isna().sum() > absolute_threshold].index #Calculates pd.series with column lables as indecies
+
+        return self
+
+    def transform(self, X):
+
+        """Drops columns with more missing values than the threshold.
+        """
+
+        assert isinstance(X, pd.DataFrame)
+
+        return X.drop(columns = self.drop_columns)
+
+
+
 class CorrelatedFeatureRemover(BaseEstimator, TransformerMixin):
 
     """
@@ -79,54 +79,54 @@ class CorrelatedFeatureRemover(BaseEstimator, TransformerMixin):
     is greater than the specified corr_threshold, therefore both strong negative and
     positive correlations are accounted for. If no corr_threshold is specified then
     the corr_threshold is 0.9.
-    
+
     Parameters
     ----------
     method : {'pearson', 'kendall', 'spearman'}
             * pearson : standard correlation coefficient
             * kendall : Kendall Tau correlation coefficient
             * spearman : Spearman rank correlation
-    
+
     corr_threshold: The threshold above which correlated features should be dropped.
                     Must be between -1 and 1
-    
+
     print_drop_feat:    If "True" then the correlated feature set and the corr val
                         of the dropped features is printed to the screen.
-        
+
     Authors
     -------
     William Holtam
     """
-    
+
     def __init__(self, method = 'pearson', corr_threshold = 0.9, print_drop_feat = False):
-        
+
         """
         Description
         -----------
-        Initialise the transformer object and sets the method, 
+        Initialise the transformer object and sets the method,
         corr_threshold and print_drop_featas instance variables.
         """
-        
+
         self.method = method
         self.corr_threshold = corr_threshold
         self.print_drop_feat = print_drop_feat
-    
+
     def fit(self, X, y = None):
-        
+
         """
         Fit creates a correlation matrix and itterates through it to identify
         columns which are correlated to a greater extent than the corr_threshold.
-        
+
         The column numbers of these columns are appended to the "drop_cols" list.
         The "drop_cols" list is sorted and assigned to the instance variable self.drops.
         """
-        
-        # Creates Correlation Matrix    
+
+        # Creates Correlation Matrix
         corr_matrix = X.corr(method = self.method)
         iters = range(len(corr_matrix.columns) - 1)
         drop_cols = []
         count = 0
-    
+
         # Iterates through Correlation Matrix Table to find correlated columns
         for i in iters:
             for j in range(i):
@@ -134,33 +134,33 @@ class CorrelatedFeatureRemover(BaseEstimator, TransformerMixin):
                 col = item.columns
                 row = item.index
                 val = item.values
-                
+
                 if abs(val) >= self.corr_threshold:
-                    
+
                     # Prints the correlated feature set and the corr val
                     if self.print_drop_feat == True:
                         print(col.values[0], "|", row.values[0], "|", round(val[0][0], 2))
-                    
+
                     drop_cols.append(i)
                     count += 1
-                    
-        print(str(count)+" features have been droped.")            
+
+        print(str(count)+" features have been droped.")
         self.drops = sorted(set(drop_cols))[::-1]
-        
+
         return self
-            
+
     def transform(self, X):
-        
+
         """
         Transform indexes the inputed dataframe X for the dropped columns and
         drops them from the dataframe.
         """
-        
+
         # Drops the correlated columns
         for i in self.drops:
             col = X.iloc[:, (i+1):(i+2)].columns.values
             X = X.drop(col, axis=1)
-            
+
         return X
 
 
@@ -170,10 +170,10 @@ class SparseFeatureRemover(TransformerMixin, BaseEstimator):
     """
     Description:
     ------------
-    Transformer drops feature columns with a certain percentage of empty rows. 
+    Transformer drops feature columns with a certain percentage of empty rows.
     The user can set the threshold for this.
-    
-    
+
+
     Authors:
     --------
     Eden Trainor
@@ -182,13 +182,13 @@ class SparseFeatureRemover(TransformerMixin, BaseEstimator):
     -----
 
     """
-     
+
     def __init__(self, set_threshold = 90):
         """
         Description
         -----------
         Initialise the transformer object.
-        
+
         Args
         ----
         set_threshold: int
@@ -196,23 +196,23 @@ class SparseFeatureRemover(TransformerMixin, BaseEstimator):
         """
 
         self.set_threshold = set_threshold
-        
-        
+
+
     def fit(self, X, y = None): #has to take an optional y for pipelines
         """
         Description
         -----------
         Calculates the number of missing values the corresponds to the threshold.
         Detects and labels columns with more missing values that the threshold.
-        
+
         Args
         ----
         X: DataFrame, (examples, features)
             Pandas DataFrame containing training example features
-            
+
         y: array/DataFrame, (examples,)
             (Optional) Training example labels
-            
+
         Returns
         -------
         self: sklearn.transfromer object
@@ -221,14 +221,14 @@ class SparseFeatureRemover(TransformerMixin, BaseEstimator):
 
 
         #Threshold defined by # full bins in df.dropna(), we've defined  threshold as percentage empty bins.
-        absolute_threshold = (100 - self.set_threshold)*X.shape[0]/100 
-        
-        
+        absolute_threshold = (100 - self.set_threshold)*X.shape[0]/100
+
+
         self.drop_columns = features.isna().sum()[features.isna().sum() > absolute_threshold].index #Calculates pd.series with column lables as indecies
-        
+
         return self
 
-    
+
     def transform(self, X):
         """
         Description
@@ -243,25 +243,25 @@ class SparseFeatureRemover(TransformerMixin, BaseEstimator):
         Returns
         -------
         X_full: DataFrame, (examples, features)
-            Pandas DataFrame containing example features without columns in drop_columns            
-        """   
-        
+            Pandas DataFrame containing example features without columns in drop_columns
+        """
+
         assert isinstance(X, pd.DataFrame)
-        
+
         X_full = X.drop(columns = self.drop_columns)
 
         return X_full
-    
-    
-    
+
+
+
 class NoneReplacer(TransformerMixin, BaseEstimator):
-    
+
     """
     Description:
     ------------
     Transformer changes Nonetype values into numpy NaN values.
-    
-    
+
+
     Authors:
     --------
     William Holtam
@@ -270,29 +270,29 @@ class NoneReplacer(TransformerMixin, BaseEstimator):
     -----
 
     """
-    
+
     def fit(self, X, y = None):
         """
         Description
         -----------
         No fitting required for this transformer.
         Simply checks that input is a pandas dataframe or a numpy array.
-        
+
         Args
         ----
         X: DataFrame, (examples, features)
             Pandas DataFrame containing training example features
-            
+
         y: array/DataFrame, (examples,)
             (Optional) Training example labels
-            
+
         Returns
         -------
         self: sklearn.transfromer object
             Returns the fitted transformer object.
         """
         return self
-        
+
     def transform(self, X):
         """
         Description
@@ -307,25 +307,25 @@ class NoneReplacer(TransformerMixin, BaseEstimator):
         Returns
         -------
         X_full: DataFrame, (examples, features)
-            Pandas DataFrame containing example features with np.nan values instead of NoneType objects.            
+            Pandas DataFrame containing example features with np.nan values instead of NoneType objects.
         """
-        
+
         assert isinstance(X, pd.DataFrame)
-        
+
         X.fillna(value = pd.np.nan, inplace=True)
-        
+
         return pd.DataFrame(X, index = X.index, columns = X.columns)
-    
-    
-    
-    
+
+
+
+
 class AnyNaNRowRemover(TransformerMixin, BaseEstimator):
     """
     Description:
     ------------
     Transformer drops any rows where where any element in row is NaN.
-    
-    
+
+
     Authors:
     --------
     William Holtam
@@ -334,7 +334,7 @@ class AnyNaNRowRemover(TransformerMixin, BaseEstimator):
     -----
 
     """
-    
+
     def __init__(self):
         """
         Description
@@ -342,29 +342,29 @@ class AnyNaNRowRemover(TransformerMixin, BaseEstimator):
         Initialise the transformer object.
         """
         pass
-        
+
     def fit(self, X, y = None):  # has to take an optional y for pipelines
         """
         Description
         -----------
         No fitting required for this transformer.
         Simply checks that input is a pandas dataframe or a numpy array.
-        
+
         Args
         ----
         X: DataFrame, (examples, features)
             Pandas DataFrame containing training example features
-            
+
         y: array/DataFrame, (examples,)
             (Optional) Training example labels
-            
+
         Returns
         -------
         self: sklearn.transfromer object
             Returns the fitted transformer object.
         """
         return self
-    
+
     def transform(self, X):
         """
         Description
@@ -379,36 +379,36 @@ class AnyNaNRowRemover(TransformerMixin, BaseEstimator):
         Returns
         -------
         X_full: DataFrame, (examples, features)
-            Pandas DataFrame containing example features with np.nan values instead of NoneType objects.            
+            Pandas DataFrame containing example features with np.nan values instead of NoneType objects.
         """
-        
+
         assert isinstance(X, pd.DataFrame)
-        
+
         X = X.dropna(axis=0, how='any')
-        
+
         self.cleaned_data = X
-        
+
         return pd.DataFrame(X, index = X.index, columns = X.columns)
 
-    
-    
-    
+
+
+
 class DuplicateColumnRemover(BaseEstimator, TransformerMixin):
-    
+
     """
     """
-    
+
     def fit(self, X, y = None):
         groups = X.columns.to_series().groupby(X.dtypes).groups
         dups = []
-    
+
         for int64, float64 in groups.items():
-    
+
             columns = X[float64].columns
             vs = X[float64]
             columns_length = len(columns)
-            
-    
+
+
             for i in range(columns_length):
                 ia = vs.iloc[:,i].values
                 for j in range(i+1, columns_length):
@@ -416,40 +416,40 @@ class DuplicateColumnRemover(BaseEstimator, TransformerMixin):
                     if array_equal(ia, ja):
                         dups.append(columns[i])
                         break
-                        
+
         self.dups = dups
         return self
-        
+
     def transform(self, X):
         X = X.drop(self.dups, axis=1)
         return X
 
 class ConstantFeatureRemover(TransformerMixin, BaseEstimator):
     """
-    Transformer drops features from DataFrame that 
+    Transformer drops features from DataFrame that
     """
-    
+
     def __init__(self):
         pass
-    
+
     def fit(self, X, y = None):
-        
+
         #Isolate numerical columns (in secom this is all)
         numerical_columns = X.select_dtypes([np.number]).columns
-        
+
         #calculatet the standard deviation of numerical columns
         standard_deviation = X[numerical_columns].std()
-        
+
         #Indicate which columns have no standard deviation
-        self.columns_to_drop = standard_deviation[standard_deviation == 0].index           
-        
+        self.columns_to_drop = standard_deviation[standard_deviation == 0].index
+
         return self
-    
+
     def transform(self, X):
         return X.drop(self.columns_to_drop, axis = 'columns')
 
-    
-#===========================================================================================    
+
+#===========================================================================================
 #Scalers
 #===========================================================================================
 
@@ -493,7 +493,117 @@ class PandasRobustScaler(RobustScaler):
 
 
 
+class PandasNormalizer(Normalizer):
+	"""
+	Description
+	-----------
+	Implements a Normalizer scale and returns a pandas DataFrame.
 
-    
-    
+	Authors
+	-------
+	Thomas Rowe
 
+	Notes
+	-----
+	1. In most cases this class will need to be used with a selector class in a FeatureUnion.
+	"""
+
+	def fit(self, X, y = None):
+		"""
+		Description
+		-----------
+		Simple wrapper around  Fit to check the fit is on Pandas DataFrame
+		"""
+		assert isinstance(X, pd.DataFrame), '{}: input into fit method must be a pandas DataFrame'.format(self.__class__)
+
+		super().fit(X, y)
+
+		return self
+
+	def transform(self, X):
+		"""
+		Description
+		-----------
+		Simple wrapper around the  Transform method.
+		"""
+		assert isinstance(X, pd.DataFrame), '{}: input into transform method must be a pandas DataFrame'.format(self.__class__)
+
+		return pd.DataFrame(super().transform(X), index = X.index, columns = X.columns)
+
+
+class PandasStandardScaler(StandardScaler):
+	"""
+	Description
+	-----------
+	Implements a standard scale and returns a pandas DataFrame.
+
+	Authors
+	-------
+	Thomas Rowe
+
+	Notes
+	-----
+	1. In most cases this class will need to be used with a selector class in a FeatureUnion.
+	"""
+
+	def fit(self, X, y = None):
+		"""
+		Description
+		-----------
+		Simple wrapper around  Fit to check the fit is on Pandas DataFrame
+		"""
+		assert isinstance(X, pd.DataFrame), '{}: input into fit method must be a pandas DataFrame'.format(self.__class__)
+
+		super().fit(X, y)
+
+		return self
+
+	def transform(self, X):
+		"""
+		Description
+		-----------
+		Simple wrapper around the  Transform method.
+		"""
+		assert isinstance(X, pd.DataFrame), '{}: input into transform method must be a pandas DataFrame'.format(self.__class__)
+
+		return pd.DataFrame(super().transform(X), index = X.index, columns = X.columns)
+
+
+
+
+class PandasMinMaxScaler(Normalizer):
+	"""
+	Description
+	-----------
+	Implements a MinMaxScaler scale and returns a pandas DataFrame.
+
+	Authors
+	-------
+	Thomas Rowe
+
+	Notes
+	-----
+	1. In most cases this class will need to be used with a selector class in a FeatureUnion.
+	"""
+
+	def fit(self, X, y = None):
+		"""
+		Description
+		-----------
+		Simple wrapper around  Fit to check the fit is on Pandas DataFrame
+		"""
+		assert isinstance(X, pd.DataFrame), '{}: input into fit method must be a pandas DataFrame'.format(self.__class__)
+
+		super().fit(X, y)
+
+		return self
+
+	def transform(self, X):
+		"""
+		Description
+		-----------
+		Simple wrapper around the  Transform method.
+		"""
+		assert isinstance(X, pd.DataFrame), '{}: input into transform method must be a pandas DataFrame'.format(self.__class__)
+
+		return pd.DataFrame(super().transform(X), index = X.index, columns = X.columns)
