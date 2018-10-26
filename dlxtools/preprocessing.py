@@ -23,7 +23,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.feature_selection import SelectKBest, SelectFromModel
 from sklearn.decomposition import TruncatedSVD
-from sklearn.preprocessing import RobustScaler, 
+from sklearn.preprocessing import RobustScaler 
 
 
 #===========================================================================================
