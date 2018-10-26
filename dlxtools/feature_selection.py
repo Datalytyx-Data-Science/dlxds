@@ -16,9 +16,12 @@ __all__ = [
 #Imports
 #===========================================================================================
 
-import numpy as np
+import numpy as np 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.feature_selection import SelectKBest, SelectFromModel
+from sklearn.decomposition import TruncatedSVD, PCA
+from sklearn.preprocessing import RobustScaler 
 
 #===========================================================================================
 #Selectors
@@ -228,10 +231,9 @@ class PCAVarThreshSelector(PCA):
         #Check threshold is in valid range
         if not (0 < explained_variance_thresh <= 1):
             raise (ValueError('explained_variance_thresh must be between 0 and 1 (default 0.8), '.format(
-                explained_variance_thresh)))                  )
-
-
-
+                explained_variance_thresh))) 
+            
+        
     def find_nearest_index(self, array, value):
         """
         Description
