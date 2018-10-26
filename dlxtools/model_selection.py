@@ -13,7 +13,7 @@ etc
 import numpy as np 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.model_selection import GridSearchCV,
+from sklearn.model_selection import GridSearchCV
 
 #Class for hyperparameter searches across models
 class EstimatorSelectionHelper:
