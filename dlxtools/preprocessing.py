@@ -12,8 +12,10 @@ __all__ = [
     'DuplicateColumnRemover',
     'PandasRobustScaler',
     'DataFrameSelector',
-    'ConstantFeatureRemover'
+    'ConstantFeatureRemover',
+    'PairwiseCorrelationPlotter'
 ]
+
 
 # ===========================================================================================
 # Imports
@@ -532,3 +534,104 @@ class PandasRobustScaler(RobustScaler):
         )
 
         return df_output
+
+
+# ===========================================================================================
+# Visualisations
+# ===========================================================================================
+
+
+class PairwiseCorrelationPlotter(TransformerMixin, BaseEstimator):
+
+    """
+    Description:
+    ------------
+    A class that produces a pairwise correlation plot for features.
+    This plot is placed into a Transformer class so that it can be
+    included in a sklearn Pipeline.
+
+    Authors:
+    --------
+    William Holtam
+
+    TODO:
+    -----
+    """
+
+    def __init__(
+        self,
+        figsize=(11, 9),
+        h_neg=240,
+        h_pos=10,
+        as_cmap=True
+    ):
+
+        """
+        Description
+        -----------
+        Initialise the transformer object and sets the following
+        initiation variables:
+        * figsize
+        * h_neg
+        * h_pos
+        * as_cmap
+        """
+
+        self.figsize = figsize
+        self.h_neg = h_neg
+        self.h_pos = h_pos
+        self.as_cmap = as_cmap
+
+    def fit(self, X, y=None):
+
+        """
+        A correlation matrix is created for the X dataframe.
+        A mask is created where the correlation matrix is 0,
+        the result is True, everywhere else, the result is False.
+        Data in the plot will not be shown in cells whre mask is True.
+
+        The result is a heatmap which displays the results of the
+        correlation matrix visually, where dark red is a strong positive
+        correlation and dark blue is a strongly negative correlation.
+        """
+
+        self.correlation = X.corr()
+#         print(self.corr)
+
+        # Generate a mask for the upper triangle
+        self.mask = np.zeros_like(self.correlation, dtype=np.bool)
+        self.mask[np.triu_indices_from(self.mask)] = True
+
+        # Set up the matplotlib figure
+        f, ax = plt.subplots(figsize=(11, 9))
+
+        # Generate a custom diverging colormap
+        self.cmap = sns.diverging_palette(
+            h_neg=self.h_neg,
+            h_pos=self.h_pos,
+            as_cmap=self.as_cmap
+        )
+
+        # Draw the heatmap with the mask and correct aspect ratio
+        sns.heatmap(
+            self.correlation,
+            mask=self.mask,
+            cmap=self.cmap,
+            vmax=.3,
+            center=0,
+            square=True,
+            linewidths=.5,
+            cbar_kws={"shrink": .5}
+        )
+
+        plt.show()
+
+        return self
+
+    def transform(self, X):
+
+        """
+        Returns the passed pandas DataFrame.
+        """
+
+        return X
