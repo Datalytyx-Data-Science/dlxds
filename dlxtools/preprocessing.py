@@ -314,7 +314,7 @@ class CorrelatedFeatureRemover(BaseEstimator, TransformerMixin):
         """
         
         # Creates Correlation Matrix    
-        corr_matrix = X.corr()
+        corr_matrix = X.corr(method = self.method)
         iters = range(len(corr_matrix.columns) - 1)
         drop_cols = []
         count = 0
@@ -632,35 +632,86 @@ class DuplicateColumnRemover(BaseEstimator, TransformerMixin):
 #Scalers
 #===========================================================================================
 
-class RobustScalerNumerical(RobustScaler):
-    """Implements RobustScaler on numerical columns only."""
+
+class PandasRobustScaler(RobustScaler):
+	"""
+	Description
+	-----------
+	Implements a robust scale and returns a pandas DataFrame.
+
+	Authors
+	-------
+	Eden Trainor
+
+	Notes
+	-----
+	1. In most cases this class will need to be used with a selector class in a FeatureUnion.
+	"""
+
+	def fit(self, X, y = None):
+		"""
+		Description
+		-----------
+		Simple wrapper around RobustScaler Fit to check the fit is on Pandas DataFrame
+		"""
+		assert isinstance(X, pd.Dataframe), '{}: input into fit method must be a pandas DataFrame'.format(self.__class__)
+
+		super().fit(X, y)
+
+		return self
+
+	def transform(self, X):
+		"""
+		Description
+		-----------
+		Simple wrapper around the RobustScaler Transform method.
+		"""
+		assert isinstance(X, pd.Dataframe), '{}: input into transform method must be a pandas DataFrame'.format(self.__class__)
+
+		return pd.DataFrame(super().transform(X), index = X.index, columns = X.columns)
+
+
+# class RobustScalerNumerical(RobustScaler):
+#     """
+
+#     Implements RobustScaler on numerical columns only.
+
+
+# 	Authors
+# 	-------
+# 	Eden Trainor
+
+# 	Notes
+# 	-----
+# 	Should probably use PandasRobustScaler, a numeric selector, and FeatureUnion.
+#     """
     
-    def fit(self, X, y = None):
+#     def fit(self, X, y = None):
         
-        """Isolates numerical columns and fits using sklearn.preprocessing.RobustScaler().fit()
-        """
+#         """Isolates numerical columns and fits using sklearn.preprocessing.RobustScaler().fit()
+#         """
         
-        #Isolate numerical columns (in secom this is all)
-        self.numerical_columns = X.select_dtypes([np.number]).columns
+#         #Isolate numerical columns (in secom this is all)
+#         self.numerical_columns = X.select_dtypes([np.number]).columns
         
-        #Call parent fit method on just numerical columns
-        super(RobustScalerNumerical, self).fit(X[self.numerical_columns], y)
+#         #Call parent fit method on just numerical columns
+#         super(RobustScalerNumerical, self).fit(X[self.numerical_columns], y)
         
-        return self
+#         return self
     
-    def transform(self, X):
-        """Applies sklearn.preprocessing.RobustScaler().transform() to numerical columns.
-        Concatenates scaled numerical and non numerical columns together.
-        """
+#     def transform(self, X):
+#         """Applies sklearn.preprocessing.RobustScaler().transform() to numerical columns.
+#         Concatenates scaled numerical and non numerical columns together.
+#         """
         
-        #Scale numerical columns
-        X_num = X[self.numerical_columns]
-        X_scaled = super(RobustScalerNumerical, self).transform(X_num)
+#         #Scale numerical columns
+#         X_num = X[self.numerical_columns]
+#         X_scaled = super(RobustScalerNumerical, self).transform(X_num)
         
-        #Move to a dataframe for concatenation, Important to have the same row indicies and column headers. 
-        X_scaled_df = pd.DataFrame(X_scaled, columns = self.numerical_columns, index = X.index)
+#         #Move to a dataframe for concatenation, Important to have the same row indicies and column headers. 
+#         X_scaled_df = pd.DataFrame(X_scaled, columns = self.numerical_columns, index = X.index)
         
-        #Gather non numerical columns
-        X_not_scaled = X[[column for column in X.columns if column not in self.numerical_columns]]
+#         #Gather non numerical columns
+#         X_not_scaled = X[[column for column in X.columns if column not in self.numerical_columns]]
         
-        return pd.concat([X_scaled_df, X_not_scaled], axis = 'columns')[X.columns] #Concatenate columns in original order
+#         return pd.concat([X_scaled_df, X_not_scaled], axis = 'columns')[X.columns] #Concatenate columns in original order
