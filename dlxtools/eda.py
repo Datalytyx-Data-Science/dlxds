@@ -1,26 +1,28 @@
 """
 This is the module for exploritory data analyisis tools.
 """
+
 __all__ = [
-'DFInfo',
+    'DFInfo',
 ]
-#===========================================================================================
-#Imports
-#===========================================================================================
+
+
+# ===========================================================================================
+# Imports
+# ===========================================================================================
 
 import pandas as pd
 
 
-
-#===========================================================================================
-#Descriptive Classes
-#===========================================================================================
+# ===========================================================================================
+# Descriptive Classes
+# ===========================================================================================
 
 
 # Class to extract information from the train and test datasets.
 class DFInfo:
 
-   """
+    """
     A Class that extracts characteristics of the train and
     test datasets.
 
@@ -59,7 +61,8 @@ class DFInfo:
     def info(self):
 
         """
-        Method extracts the following characteristics from the train and test dataframes:
+        Method extracts the following characteristics from the
+        train and test dataframes:
         * Nº of rows and colums
         * Type of columns
         * Nº of columns with missing values
@@ -97,22 +100,22 @@ class DFInfo:
         print('-'*60)
         list = []
         counts = []
-        
+
         for i in self.train.columns:
             list.append(i)
             counts.append(sum(self.train[i].isnull()))
-            
+
         print('Train: Nº of columns with missing values')
         print('-'*60)
         print(sum(counts))
         print('-'*60)
         list = []
         counts = []
-        
+
         for i in self.test.columns:
             list.append(i)
             counts.append(sum(self.test[i].isnull()))
-            
+
         print('Test: Nº of columns with missing values')
         print('-'*60)
         print(sum(counts))
@@ -143,10 +146,3 @@ class DFInfo:
         print('-'*60)
         print(str(columns_test_sum[columns_train_sum == 0].count()))
         print('-'*60)
-
-
-
-
-
-        
-        
