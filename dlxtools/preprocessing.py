@@ -669,21 +669,24 @@ class RobustScalerNumerical(RobustScaler):
     #------------------------------------------------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------------------------------------------
     
+    
+    
+ class CorrelationSelector(TransformerMixin, BaseEstimator):
+    
+    
     # A Transformer which takes a dataframe and retains those columns which are calucated to be most correlated with target variable.
     
       " Authors " 
         
       # Thomas Rowe 
     
-    class CorrelationSelector(TransformerMixin, BaseEstimator):
     
-    
-    def __init__(self, n_columns = 50):
+     def __init__(self, n_columns = 50):
         
         self.n_columns = n_columns
    
 
-    def fit(self, X, y = None):
+     def fit(self, X, y = None):
         
         if not isinstance(X, pd.DataFrame):
             raise TypeError('X must be a pandas DataFrame')
@@ -719,7 +722,7 @@ class RobustScalerNumerical(RobustScaler):
         return self
                  
     
-    def transform(self, X):
+     def transform(self, X):
         
         
         return X.loc[:, self.most_correlated_cols] 
