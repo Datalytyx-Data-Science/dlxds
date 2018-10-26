@@ -17,15 +17,19 @@ from sklearn.model_selection import GridSearchCV
 
 #Class for hyperparameter searches across models
 class EstimatorSelectionHelper:
-	"""
-	Authors
-	-------
-	Chris Schon
-	"""
+    """
+    Authors
+    -------
+    Chris Schon
+    """
+    
     def __init__(self, models, params):
+
         if not set(models.keys()).issubset(set(params.keys())):
+        
             missing_params = list(set(models.keys()) - set(params.keys()))
             raise ValueError("Some estimators are missing parameters: %s" % missing_params)
+        
         self.models = models
         self.params = params
         self.keys = models.keys()
